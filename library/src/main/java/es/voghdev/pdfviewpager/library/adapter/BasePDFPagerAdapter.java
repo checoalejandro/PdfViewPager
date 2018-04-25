@@ -178,4 +178,8 @@ public class BasePDFPagerAdapter extends PagerAdapter {
     public boolean isViewFromObject(View view, Object object) {
         return view == (View) object;
     }
+
+    public boolean isRendererLoaded() {
+        return renderer != null;
+    }
 }
