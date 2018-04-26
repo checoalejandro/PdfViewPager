@@ -44,6 +44,8 @@ public class BasePDFPagerAdapter extends PagerAdapter {
     PdfRenderer renderer;
     BitmapContainer bitmapContainer;
     LayoutInflater inflater;
+    ParcelFileDescriptor fileDescriptor;
+    PdfRenderer.Page page;
 
     protected float renderQuality;
     protected int offScreenSize;
@@ -72,7 +74,8 @@ public class BasePDFPagerAdapter extends PagerAdapter {
     @SuppressWarnings("NewApi")
     protected void init() {
         try {
-            renderer = new PdfRenderer(getSeekableFileDescriptor(pdfPath));
+            fileDescriptor = getSeekableFileDescriptor(pdfPath);
+            renderer = new PdfRenderer(fileDescriptor);
             inflater = (LayoutInflater) context.getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
             PdfRendererParams params = extractPdfParamsFromFirstPage(renderer, renderQuality);
             bitmapContainer = new SimpleBitmapPool(params);
@@ -131,7 +134,7 @@ public class BasePDFPagerAdapter extends PagerAdapter {
             return v;
         }
 
-        PdfRenderer.Page page = getPDFPage(renderer, position);
+        page = getPDFPage(renderer, position);
 
         Bitmap bitmap = bitmapContainer.get(position);
         page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY);
@@ -181,5 +184,17 @@ public class BasePDFPagerAdapter extends PagerAdapter {
 
     public boolean isRendererLoaded() {
         return renderer != null;
+    }
+
+    @SuppressWarnings("NewApi")
+    public void clear() throws IOException{
+        close();
+        if (fileDescriptor != null) {
+            fileDescriptor.close();
+        }
+
+        if (page != null) {
+            page.close();
+        }
     }
 }
